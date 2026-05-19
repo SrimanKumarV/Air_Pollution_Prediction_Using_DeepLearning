@@ -11,15 +11,29 @@ output_folder = "data/processed/"
 os.makedirs(output_folder, exist_ok=True)
 
 def apply_urban_dust(image, dust_density):
-    """Apply dust effect based on pollution level (0-100)."""
+    """Apply extreme beige/brown dust occlusion based on pollution level (0-100)."""
+    # Create the beige dust color layer (BGR format for OpenCV)
+    dust_color = np.full_like(image, (170, 195, 210), dtype=np.uint8)
+    
+    # Add noise to the dust layer to simulate heavy sand/soil texture
+    gauss = np.random.normal(0, 30, image.shape).astype(np.int16)
+    dust_texture = np.clip(dust_color.astype(np.int16) + gauss, 0, 255).astype(np.uint8)
+    
+    # Calculate occlusion percentage (0.0 to 1.0)
+    occlusion = min(dust_density / 100.0, 1.0)
+    
+    # Dull the underlying leaf slightly based on pollution (less sunlight)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV).astype(np.float64)
-    hsv[:,:,1] *= 0.65
-    hsv[:,:,2] *= 0.75
-    dulled = cv2.cvtColor(np.clip(hsv, 0, 255).astype(np.uint8), cv2.COLOR_HSV2BGR)
-    gauss = np.random.normal(0, dust_density, dulled.shape)
-    noisy = np.clip(dulled + gauss * 0.4, 0, 255).astype(np.uint8)
-    dust_tint = np.full_like(noisy, (140, 160, 170), dtype=np.uint8)
-    return cv2.addWeighted(noisy, 0.75, dust_tint, 0.25, 0)
+    hsv[:,:,1] *= (1.0 - (0.6 * occlusion)) # Desaturate heavily
+    hsv[:,:,2] *= (1.0 - (0.4 * occlusion)) # Darken
+    dulled_leaf = cv2.cvtColor(np.clip(hsv, 0, 255).astype(np.uint8), cv2.COLOR_HSV2BGR)
+    
+    # Blend the dulled leaf with the heavy beige dust texture
+    # If occlusion is 100%, the image becomes 95% beige dust and 5% leaf texture (to keep veins visible)
+    blend_weight = occlusion * 0.95
+    dusty_leaf = cv2.addWeighted(dulled_leaf, 1.0 - blend_weight, dust_texture, blend_weight, 0)
+    
+    return dusty_leaf
 
 image_paths = glob.glob(input_folder)
 data_log = []
