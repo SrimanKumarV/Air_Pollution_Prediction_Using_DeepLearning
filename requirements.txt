@@ -1,0 +1,12 @@
+opencv-python
+numpy
+matplotlib
+streamlit
+Pillow
+tensorflow
+# Optional packages for model training or dataset management:
+# pandas
+# kagglehub
+
+# Note: TensorFlow and pandas may require a Python version <= 3.13 for binary compatibility.
+# If you need training support, install them separately in a compatible interpreter.

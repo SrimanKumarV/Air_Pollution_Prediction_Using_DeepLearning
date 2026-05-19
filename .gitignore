@@ -1,0 +1,15 @@
+.venv312/
+venv/
+__pycache__/
+*.pyc
+.vscode/
+
+# Ignore generated datasets and models
+data/raw/
+data/processed/
+data/classifier/
+data/clean/
+data/dusty/
+models/*.keras
+*.zip
+history.csv
