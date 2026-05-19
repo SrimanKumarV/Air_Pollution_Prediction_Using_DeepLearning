@@ -115,19 +115,45 @@ st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", ["Home", "Models", "Training Metrics", "About Us", "Technical Stack"])
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("Dataset Download")
-st.sidebar.write("Download the augmented dataset used for training.")
+st.sidebar.subheader("Download Resources")
+
+# Initialize session state for zip files to prevent nested button bug
+if 'dataset_zipped' not in st.session_state:
+    st.session_state.dataset_zipped = False
+if 'models_zipped' not in st.session_state:
+    st.session_state.models_zipped = False
+
+# Dataset Download
+st.sidebar.write("Download augmented dataset:")
 if st.sidebar.button("Prepare Dataset Zip"):
     with st.spinner("Zipping data..."):
         shutil.make_archive("dataset_augmented", 'zip', str(DATA_DIR))
-        st.sidebar.success("Ready!")
-        with open("dataset_augmented.zip", "rb") as fp:
-            st.sidebar.download_button(
-                label="Download Zip",
-                data=fp,
-                file_name="dataset_augmented.zip",
-                mime="application/zip"
-            )
+        st.session_state.dataset_zipped = True
+
+if st.session_state.dataset_zipped:
+    with open("dataset_augmented.zip", "rb") as fp:
+        st.sidebar.download_button(
+            label="Download Dataset Zip",
+            data=fp,
+            file_name="dataset_augmented.zip",
+            mime="application/zip"
+        )
+
+# Models Download
+st.sidebar.write("Download trained models:")
+if st.sidebar.button("Prepare Models Zip"):
+    with st.spinner("Zipping models..."):
+        shutil.make_archive("trained_models", 'zip', str(BASE_DIR / "models"))
+        st.session_state.models_zipped = True
+
+if st.session_state.models_zipped:
+    with open("trained_models.zip", "rb") as fp:
+        st.sidebar.download_button(
+            label="Download Models Zip",
+            data=fp,
+            file_name="trained_models.zip",
+            mime="application/zip"
+        )
 
 # ==========================================
 # PAGE: HOME
