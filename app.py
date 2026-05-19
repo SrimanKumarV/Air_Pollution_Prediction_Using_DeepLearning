@@ -83,32 +83,7 @@ def save_history(filename, prediction):
     else:
         new_data.to_csv(HISTORY_FILE, index=False)
 
-# --- Zero-Shot Leaf Detection (OOD) ---
-@st.cache_resource
-def load_imagenet_model():
-    import tensorflow as tf
-    return tf.keras.applications.MobileNetV2(weights='imagenet')
 
-def is_image_a_leaf(img):
-    import tensorflow as tf
-    model = load_imagenet_model()
-    # Preprocess for ImageNet MobileNetV2
-    img_resized = img.resize((224, 224))
-    x = np.expand_dims(np.array(img_resized), axis=0)
-    x = tf.keras.applications.mobilenet_v2.preprocess_input(x)
-    
-    preds = model.predict(x)
-    decoded = tf.keras.applications.mobilenet_v2.decode_predictions(preds, top=10)[0]
-    
-    # Botanical keywords to look for in top 10 ImageNet predictions
-    botanical_keywords = ['leaf', 'plant', 'pot', 'flower', 'tree', 'fruit', 'vegetable', 'daisy', 'rose', 'mushroom', 'fern', 'greenhouse', 'strawberry', 'lemon', 'orange', 'fig', 'pineapple', 'banana', 'apple', 'broccoli', 'cabbage', 'cucumber', 'zucchini', 'corn', 'acorn', 'bell_pepper', 'head_cabbage', 'cardoon', 'artichoke']
-    
-    for _, label, _ in decoded:
-        label_lower = label.lower()
-        if any(keyword in label_lower for keyword in botanical_keywords):
-            return True
-            
-    return False
 
 # --- Sidebar Navigation ---
 st.sidebar.title("Navigation")
@@ -189,34 +164,31 @@ if page == "Home":
                 st.info("Prediction is unavailable until both models are trained and placed in models/.")
             else:
                 with st.spinner("Analyzing..."):
-                    if not is_image_a_leaf(img):
-                        st.error("❌ Out of Distribution Error: This image does not appear to be a leaf or plant. Please upload a valid botanical image for environmental analysis.")
+                    x = np.expand_dims(np.array(img), axis=0)
+                    
+                    # First Classify
+                    is_dusty_prob = classifier.predict(x)[0][0]
+                    
+                    st.write(f"*Classifier probability of being dusty: {is_dusty_prob:.4f}*")
+                    
+                    if is_dusty_prob < 0.5:
+                        st.success("Classification: Clean Leaf Detected")
                     else:
-                        x = np.expand_dims(np.array(img), axis=0)
+                        st.warning("Classification: Dust Patterns Detected")
                         
-                        # First Classify
-                        is_dusty_prob = classifier.predict(x)[0][0]
-                        
-                        st.write(f"*Classifier probability of being dusty: {is_dusty_prob:.4f}*")
-                        
-                        if is_dusty_prob < 0.5:
-                            st.success("Classification: Clean Leaf Detected")
-                        else:
-                            st.warning("Classification: Dust Patterns Detected")
-                            
-                        # Always Regress to show continuous density
-                        pred = regressor.predict(x)[0][0]
-                        # Ensure prediction doesn't go below zero due to linear activation
-                        pred = max(0.0, float(pred))
-                        save_history(filename, pred)
-                        
-                        st.metric("Estimated Particulate Matter Density", f"{pred:.2f}")
-                        if pred < 30:
-                            st.success("Air Quality: Healthy")
-                        elif pred < 70:
-                            st.warning("Air Quality: Moderate")
-                        else:
-                            st.error("Air Quality: Severe")
+                    # Always Regress to show continuous density
+                    pred = regressor.predict(x)[0][0]
+                    # Ensure prediction doesn't go below zero due to linear activation
+                    pred = max(0.0, float(pred))
+                    save_history(filename, pred)
+                    
+                    st.metric("Estimated Particulate Matter Density", f"{pred:.2f}")
+                    if pred < 30:
+                        st.success("Air Quality: Healthy")
+                    elif pred < 70:
+                        st.warning("Air Quality: Moderate")
+                    else:
+                        st.error("Air Quality: Severe")
 
     # --- Graphs & Analytics ---
     st.markdown("---")
