@@ -10,6 +10,5 @@ data/processed/
 data/classifier/
 data/clean/
 data/dusty/
-models/*.keras
 *.zip
 history.csv
