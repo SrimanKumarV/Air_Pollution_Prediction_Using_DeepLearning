@@ -75,3 +75,13 @@ To summarize the entire project pipeline into its absolute core components, here
    ```powershell
    streamlit run app.py
    ```
+
+## ☁️ Streamlit Cloud Deployment
+
+When deploying to **Streamlit Community Cloud**, TensorFlow is currently incompatible with Python 3.14. You must manually configure the Python version during deployment:
+
+1. Click **New app** on your Streamlit dashboard.
+2. Select your repository, branch, and `app.py`.
+3. Click **Advanced settings** (before deploying).
+4. Select **Python 3.11** from the dropdown menu.
+5. Click **Save** and then **Deploy**.
