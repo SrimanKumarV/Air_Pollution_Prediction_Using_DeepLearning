@@ -58,5 +58,9 @@ model.compile(optimizer='adam',
               loss='binary_crossentropy',
               metrics=['accuracy'])
 
-model.fit(train_ds, validation_data=val_ds, epochs=10)
+history = model.fit(train_ds, validation_data=val_ds, epochs=10)
 model.save("models/classifier.keras")
+
+import pandas as pd
+hist_df = pd.DataFrame(history.history)
+hist_df.to_csv("models/classifier_history.csv", index=False)

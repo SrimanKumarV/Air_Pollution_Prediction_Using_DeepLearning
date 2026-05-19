@@ -43,5 +43,9 @@ model = keras.Model(inputs, outputs)
 
 model.compile(optimizer='adam', loss='mean_absolute_error',
               metrics=[tf.keras.metrics.RootMeanSquaredError()])
-model.fit(train_ds, validation_data=val_ds, epochs=15)
+history = model.fit(train_ds, validation_data=val_ds, epochs=15)
 model.save("models/regressor.keras")
+
+import pandas as pd
+hist_df = pd.DataFrame(history.history)
+hist_df.to_csv("models/regressor_history.csv", index=False)
