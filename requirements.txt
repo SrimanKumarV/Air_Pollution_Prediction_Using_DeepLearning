@@ -5,3 +5,4 @@ Pillow
 tensorflow~=2.21.0
 pandas
 altair
+scikit-learn

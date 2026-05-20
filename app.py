@@ -57,7 +57,7 @@ PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
 
 # --- Model Loading ---
 @st.cache_resource
-def load_model_from_disk(path: str):
+def load_model_from_disk(path: str, mtime: float):
     import tensorflow as tf
     return tf.keras.models.load_model(path)
 
@@ -70,9 +70,9 @@ def load_models():
         
     classifier, regressor = None, None
     if CLASSIFIER_PATH.exists():
-        classifier = load_model_from_disk(str(CLASSIFIER_PATH))
+        classifier = load_model_from_disk(str(CLASSIFIER_PATH), os.path.getmtime(str(CLASSIFIER_PATH)))
     if REGRESSOR_PATH.exists():
-        regressor = load_model_from_disk(str(REGRESSOR_PATH))
+        regressor = load_model_from_disk(str(REGRESSOR_PATH), os.path.getmtime(str(REGRESSOR_PATH)))
     return classifier, regressor
 
 classifier, regressor = load_models()
