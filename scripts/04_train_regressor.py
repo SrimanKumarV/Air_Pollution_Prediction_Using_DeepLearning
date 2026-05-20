@@ -43,25 +43,5 @@ model = keras.Model(inputs, outputs)
 
 model.compile(optimizer='adam', loss='mean_absolute_error',
               metrics=[tf.keras.metrics.RootMeanSquaredError()])
-# Train top layer
-print("Training top layer...")
-history1 = model.fit(train_ds, validation_data=val_ds, epochs=5)
-
-# Fine-tune
-print("Fine-tuning base model...")
-base_model.trainable = True
-for layer in base_model.layers[:-20]:
-    if not isinstance(layer, tf.keras.layers.BatchNormalization):
-        layer.trainable = False
-
-model.compile(optimizer=tf.keras.optimizers.Adam(1e-5), loss='mean_absolute_error',
-              metrics=[tf.keras.metrics.RootMeanSquaredError()])
-history2 = model.fit(train_ds, validation_data=val_ds, epochs=10)
-
-import pandas as pd
-hist_df1 = pd.DataFrame(history1.history)
-hist_df2 = pd.DataFrame(history2.history)
-hist_df = pd.concat([hist_df1, hist_df2], ignore_index=True)
-hist_df.to_csv("models/regressor_history.csv", index=False)
-
+model.fit(train_ds, validation_data=val_ds, epochs=15)
 model.save("models/regressor.keras")

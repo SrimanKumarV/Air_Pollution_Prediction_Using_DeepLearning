@@ -58,27 +58,5 @@ model.compile(optimizer='adam',
               loss='binary_crossentropy',
               metrics=['accuracy'])
 
-# Train top layer
-print("Training top layer...")
-history1 = model.fit(train_ds, validation_data=val_ds, epochs=5)
-
-# Fine-tune
-print("Fine-tuning base model...")
-base_model.trainable = True
-for layer in base_model.layers[:-20]:
-    if not isinstance(layer, tf.keras.layers.BatchNormalization):
-        layer.trainable = False
-
-model.compile(optimizer=tf.keras.optimizers.Adam(1e-5),
-              loss='binary_crossentropy',
-              metrics=['accuracy'])
-
-history2 = model.fit(train_ds, validation_data=val_ds, epochs=5)
-
-import pandas as pd
-hist_df1 = pd.DataFrame(history1.history)
-hist_df2 = pd.DataFrame(history2.history)
-hist_df = pd.concat([hist_df1, hist_df2], ignore_index=True)
-hist_df.to_csv("models/classifier_history.csv", index=False)
-
+model.fit(train_ds, validation_data=val_ds, epochs=10)
 model.save("models/classifier.keras")
