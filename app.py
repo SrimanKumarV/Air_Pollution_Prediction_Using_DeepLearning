@@ -56,9 +56,9 @@ REGRESSOR_HIST_PATH = BASE_DIR / "models" / "regressor_history.csv"
 PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
 
 # --- Model Loading ---
+@st.cache_resource
 def load_model_from_disk(path: str):
     import tensorflow as tf
-    # Caching removed to force Streamlit Cloud to pull the massive new models.
     return tf.keras.models.load_model(path)
 
 def load_models():
